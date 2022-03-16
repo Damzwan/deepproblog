@@ -40,7 +40,7 @@ saveModelPath = 'data/model.pt'
 for i in range(1):
     print('Epoch {}...'.format(i+1))
     time1 = time.time()
-    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=1, smPickle='data/stableModels.pickle')
+    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=1, smPickle='data/stableModelso.pickle')
     time2 = time.time()
     acc, _ = NeurASPobj.testNN('digit', test_loader)
     print('Test Acc: {:0.2f}%'.format(acc))

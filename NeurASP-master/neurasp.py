@@ -61,7 +61,6 @@ class NeurASP(object):
         @param nnAtom: a string of a neural atom
         @param countIdx: a Boolean value denoting whether we count the index for the value of m(t, i)[j]
         """
-
         # STEP 1: obtain all information
         regex = '^nn\((.+)\((.+)\),\((.+)\)\)$'
         out = re.search(regex, nnAtom)
