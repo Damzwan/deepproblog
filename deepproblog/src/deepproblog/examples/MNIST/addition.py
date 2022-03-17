@@ -31,7 +31,7 @@ parameters = {
 configuration = get_configuration(parameters, i)
 torch.manual_seed(configuration["run"])
 
-name = "addition_" + config_to_string(configuration) + "_" + format_time_precise()
+name = "clothes_" + config_to_string(configuration) + "_" + format_time_precise()
 print(name)
 
 train_set = addition(configuration["N"], "train")
