@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms import transforms
 
 TRAINING_DATA_SIZE = 100
+TYPES_OF_CLOTHES = 1
 
 class FashionMNIST_Group(Dataset):
 
@@ -41,7 +42,7 @@ transform = transforms.Compose([transforms.ToTensor()])
 # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081, ))])
 
 train_dataset = torchvision.datasets.FashionMNIST(root='./data/', train=True, download=True, transform=transform)
-train_dataset = FashionMNIST_Group(train_dataset, 1)
+train_dataset = FashionMNIST_Group(train_dataset, TYPES_OF_CLOTHES)
 test_loader = torch.utils.data.DataLoader(torchvision.datasets.FashionMNIST('./data/', train=False, transform=transform), batch_size=1000, shuffle=True)
 
 dataList = []

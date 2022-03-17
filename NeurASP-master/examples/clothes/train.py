@@ -15,10 +15,12 @@ startTime = time.time()
 # It can also be written in a file
 ######################################
 
-dprogram = '''
+dprogram = r'''
 clothesImage(c1). 
 clothesImage(c2).
 clothesImage(c3).
+clothes(Y) :- top(Y); bot(Y); shoe(Y).
+
 clothesGroup(A, B, C) :- top(A), bot(B), shoe(C); top(A), bot(C), shoe(B); top(B), bot(A), shoe(C);
                          top(B), bot(C), shoe(A); top(C), bot(A), shoe(B); top(C), bot(B), shoe(A).
 nn(clothes(1, X), [0, 1, 2, 3, 5, 6, 7, 8, 9]) :- clothesImage(X).
@@ -47,7 +49,7 @@ saveModelPath = 'data/model.pt'
 for i in range(1):
     print('Epoch {}...'.format(i+1))
     time1 = time.time()
-    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=1)#, smPickle='data/stableModels.pickle')
+    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=1, smPickle='data/stableModels.pickle')
     time2 = time.time()
     acc, _ = NeurASPobj.testNN('clothes', test_loader)
     print('Test Acc: {:0.2f}%'.format(acc))
