@@ -43,11 +43,11 @@ transform = transforms.Compose([transforms.ToTensor()])
 
 train_dataset = torchvision.datasets.FashionMNIST(root='./data/', train=True, download=True, transform=transform)
 train_dataset = FashionMNIST_Group(train_dataset, TYPES_OF_CLOTHES)
-test_loader = torch.utils.data.DataLoader(torchvision.datasets.FashionMNIST('./data/', train=False, transform=transform), batch_size=1000, shuffle=True)
+test_loader = torch.utils.data.DataLoader(torchvision.datasets.FashionMNIST('./data/', train=False, transform=transform), batch_size=10, shuffle=True)
 
 dataList = []
 obsList = []
 for i in range(TRAINING_DATA_SIZE):
     clothes = train_dataset.getRandom()
     dataList.append({'c1': clothes[0][0].unsqueeze(0), 'c2': clothes[1][0].unsqueeze(0), 'c3': clothes[2][0].unsqueeze(0)})
-    obsList.append(':- clothesGroup(c1, c2, c3).')
+    obsList.append('')

@@ -406,7 +406,9 @@ class NeurASP(object):
         singleTotal = 0
         with torch.no_grad():
             for data, target in testLoader:
+                # print("data and target is", data, target)
                 output = self.nnMapping[nn](data.to(self.device))
+                # print("output:", output)
                 if self.n[nn] > 2 :
                     pred = output.argmax(dim=-1, keepdim=True) # get the index of the max log-probability
                     target = target.to(self.device).view_as(pred)

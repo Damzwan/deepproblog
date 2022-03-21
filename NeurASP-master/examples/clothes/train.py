@@ -19,16 +19,21 @@ dprogram = r'''
 clothesImage(c1). 
 clothesImage(c2).
 clothesImage(c3).
-clothes(Y) :- top(Y); bot(Y); shoe(Y).
+top(0).
+bot(1).
+shoe(5).
 
 clothesGroup(A, B, C) :- top(A), bot(B), shoe(C); top(A), bot(C), shoe(B); top(B), bot(A), shoe(C);
                          top(B), bot(C), shoe(A); top(C), bot(A), shoe(B); top(C), bot(B), shoe(A).
-nn(clothes(1, X), [0, 1, 2, 3, 5, 6, 7, 8, 9]) :- clothesImage(X).
+                         
+finalQuery(C1, C2, C3) :- clothes(0, C1, A), clothes(0, C2, B), clothes(0, C3, C), 
+                       A != B, B != C, A != C, 
+                       clothesGroup(A, B, C).
+                       
+finalQuery(c1, c2, c3).
+nn(clothes(1, X), [0, 1, 5]) :- clothesImage(X).
 '''
 
-# findall(X, is_top(X), ListT), length(ListT, 1),
-#                          findall(X, is_bot(X), ListB), length(ListB, 1),
-#                          findall(X, is_shoe(X), ListS), length(ListS, 1).
 
 ########
 # Define nnMapping and optimizers, initialze NeurASP object
