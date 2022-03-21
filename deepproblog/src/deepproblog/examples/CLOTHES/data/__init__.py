@@ -13,7 +13,7 @@ from deepproblog.query import Query
 from problog.logic import Term, list2term, Constant
 
 
-class MNIST_Clothes(object):
+class ClothGroupGenerator(object):
 
     def __init__(self, dataset, size):
         self.labelMap = {0: 'T-shirt/top', 1: 'Trouser', 2: 'Pullover', 3: 'Dress', 4: 'Coat', 5: 'Sandal',
@@ -52,20 +52,48 @@ datasets = {
 }
 
 
-def clothes(n: int, dataset: str):
+class MNIST_Images(object):
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    def __getitem__(self, item):
+        return self.dataset[int(item[0])][0]
+
+
+# TODO look at addition_mil
+# class MNIST(Dataset):
+#     def __len__(self):
+#         return len(self.dataset)
+#
+#     def to_query(self, i):
+#         l = self.dataset[i][1]
+#         l = Constant(self.val_list.index(l))
+#
+#         return Query(
+#             Term("clothes", Term("tensor", Term(self.dataset, Term("a"))), l),
+#             substitution={Term("a"): Constant(i)},
+#         )
+#
+#     def __init__(self, dataset):
+#         self.dataset = dataset
+#         self.val_list = list(labelMap.values())
+
+
+def clothesGroup(config, dataset: str, size):
     """Returns a dataset for binary addition"""
     return MNISTOperator(
         dataset_name=dataset,
-        function_name="cloth",
-        size=n,
-        arity=2,
+        function_name="clothesGroup",
+        size=size,
+        arity=3,
     )
 
 
 class MNISTOperator(Dataset, TorchDataset):
     def __getitem__(self, index: int) -> Tuple[list, list, list]:
-        clothes = self.data[index]
-        return clothes[0][0].unsqueeze(0), clothes[1][0].unsqueeze(0), clothes[2][0].unsqueeze(0)
+        i1, i2, i3 = self.data_indices[index]
+        c1, c2, c3 = self.data[i1], self.data[i2], self.data[i3]
+        return c1[0].unsqueeze(0), c2[0].unsqueeze(0), c3[0].unsqueeze(0)
 
     def __init__(self, dataset_name, size, function_name: str, arity, training_data_size: int = 100):
         """Generic dataset for operator(img, img) style datasets.
@@ -77,11 +105,17 @@ class MNISTOperator(Dataset, TorchDataset):
         self.function_name = function_name
         self.arity = arity
 
-        self.dataset = MNIST_Clothes(datasets[dataset_name], size)
+        dataset_generator = ClothGroupGenerator(datasets[dataset_name], size)
         self.data = []
+        self.data_indices = []
 
         for i in range(training_data_size):
-            self.data.append(self.dataset.getRandom())
+            j = 3 * i
+            self.data.extend(dataset_generator.getRandom())
+            self.data_indices.append((j, j + 1, j + 2))
+
+    def get_tensor_source(self):
+        return MNIST_Images(self.data)
 
     def to_file_repr(self, i):
         """Old file represenation dump. Not a very clear format as multi-digit arguments are not separated"""
@@ -102,8 +136,10 @@ class MNISTOperator(Dataset, TorchDataset):
         """Generate queries"""
 
         # Build substitution dictionary for the arguments
+        indices = self.data_indices[ind]
         subs = dict()
         var_names = []
+
         for i in range(self.arity):
             inner_vars = []
             t = Term(f"p{i}")
@@ -111,25 +147,25 @@ class MNISTOperator(Dataset, TorchDataset):
                 "tensor",
                 Term(
                     self.dataset_name,
-                    Constant(ind),
+                    Constant(indices[i]),
                 ),
             )
             inner_vars.append(t)
             var_names.append(inner_vars)
 
-            # Build query
-            return Query(
-                Term(
-                    self.function_name,
-                    *(e[0] for e in var_names),
-                    # Constant(expected_result), TODO no result?
-                ),
-                subs,
-            )
+        # Build query
+        return Query(
+            Term(
+                self.function_name,
+                *(e[0] for e in var_names),
+            ),
+            subs,
+            output_ind=(0, 1, 2)
+        )
 
     # TODO no label
     def _get_label(self, i: int):
         return NotImplementedError()
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data_indices)
