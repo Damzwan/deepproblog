@@ -13,7 +13,7 @@ from deepproblog.query import Query
 from problog.logic import Term, list2term, Constant
 
 
-class ClothGroupGenerator(object):
+class ClothGroupHelper(object):
 
     def __init__(self, dataset, size):
         self.labelMap = {0: 'T-shirt/top', 1: 'Trouser', 2: 'Pullover', 3: 'Dress', 4: 'Coat', 5: 'Sandal',
@@ -30,15 +30,32 @@ class ClothGroupGenerator(object):
         print("Finished loading data")
 
     def __getitem__(self, item):
-        return self.getRandom()
+        return self.getRandomRight()
 
-    def getRandom(self):
+    def getRandomRight(self):
         return random.sample([random.choice(self.data[random.choice(self.tops)]),
                               random.choice(self.data[random.choice(self.bots)]),
                               random.choice(self.data[random.choice(self.shoe)])], 3)
 
+    def getRandomWrong(self):
+        all_clothes = [0, 2, 6, 1, 3, 8, 5, 7, 9]
+        return random.sample([random.choice(self.data[random.choice(all_clothes)]),
+                              random.choice(self.data[random.choice(all_clothes)]),
+                              random.choice(self.data[random.choice(all_clothes)])], 3)
+
     def getCloth(self, kind, index):
         return self.data[kind][index]
+
+    def check_cloth_group(self, clothes):
+        groups = [[cloth for cloth in clothes if cloth in self.tops],
+                  [cloth for cloth in clothes if cloth in self.bots],
+                  [cloth for cloth in clothes if cloth in self.shoe]]
+
+        for group in groups:
+            if len(group) == 0:
+                return 0  # false in prolog
+
+        return 1
 
     def __len__(self):
         return sum(len(x) for x in self.data.values())
@@ -105,13 +122,16 @@ class MNISTOperator(Dataset, TorchDataset):
         self.function_name = function_name
         self.arity = arity
 
-        dataset_generator = ClothGroupGenerator(datasets[dataset_name], size)
+        self.cloth_group_helper = ClothGroupHelper(datasets[dataset_name], size)
         self.data = []
         self.data_indices = []
 
-        for i in range(training_data_size):
-            j = 3 * i
-            self.data.extend(dataset_generator.getRandom())
+        for i in range(0, 6 * (training_data_size // 2), 6):
+            self.data.extend(self.cloth_group_helper.getRandomRight())
+            self.data_indices.append((i, i + 1, i + 2))
+
+            j = i + 3
+            self.data.extend(self.cloth_group_helper.getRandomWrong())
             self.data_indices.append((j, j + 1, j + 2))
 
     def get_tensor_source(self):
@@ -137,6 +157,7 @@ class MNISTOperator(Dataset, TorchDataset):
 
         # Build substitution dictionary for the arguments
         indices = self.data_indices[ind]
+        expected_result = self._get_label(ind)
         subs = dict()
         var_names = []
 
@@ -158,14 +179,16 @@ class MNISTOperator(Dataset, TorchDataset):
             Term(
                 self.function_name,
                 *(e[0] for e in var_names),
+                Constant(expected_result)
             ),
             subs,
-            output_ind=(0, 1, 2)
         )
 
     # TODO no label
     def _get_label(self, i: int):
-        return NotImplementedError()
+        indices = self.data_indices[i]
+        clothes = [self.data[x][1] for x in indices]
+        return self.cloth_group_helper.check_cloth_group(clothes)
 
     def __len__(self):
         return len(self.data_indices)

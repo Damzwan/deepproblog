@@ -10,8 +10,12 @@ shoe(5).
 shoe(7).
 shoe(9).
 
-clothesGroup(A, B, C) :- clothes(A, C1), clothes(B, C2), clothes(C, C3),
-    (top(C1), bot(C2), shoe(C3); top(C1), bot(C2), shoe(C3); top(C2), bot(C1), shoe(C3);
-    top(C2), bot(C3), shoe(C1); top(C3), bot(C1), shoe(C2); top(C3), bot(C2), shoe(C1)).
+clothesGroup(A, B, C, 1) :- imagesToClothes(A, B, C, C1, C2, C3), check(C1, C2, C3).
+clothesGroup(A, B, C, 0) :- imagesToClothes(A, B, C, C1, C2, C3), not(check(C1, C2, C3)).
+
+imagesToClothes(A, B, C, C1, C2, C3) :- clothes(A, C1), clothes(B, C2), clothes(C, C3).
+
+check(C1, C2, C3) :- top(C1), bot(C2), shoe(C3) ; top(C1), bot(C2), shoe(C3) ; top(C2), bot(C1), shoe(C3) ;
+    top(C2), bot(C3), shoe(C1) ; top(C3), bot(C1), shoe(C2) ; top(C3), bot(C2), shoe(C1).
 
 nn(cloth_mnist_net,[X],Y,[0,1,2,3,5,6,7,8,9]) :: clothes(X, Y).

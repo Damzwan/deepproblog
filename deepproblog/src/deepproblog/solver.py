@@ -25,12 +25,12 @@ class Solver(object):
     """
 
     def __init__(
-        self,
-        model: "Model",
-        engine: Engine,
-        semiring: Type[Semiring] = GraphSemiring,
-        cache: bool = False,
-        cache_root: Optional[str] = None,
+            self,
+            model: "Model",
+            engine: Engine,
+            semiring: Type[Semiring] = GraphSemiring,
+            cache: bool = False,
+            cache_root: Optional[str] = None,
     ):
         """
 

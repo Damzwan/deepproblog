@@ -30,8 +30,10 @@ torch.manual_seed(configuration["run"])
 name = "clothes" + config_to_string(configuration) + "_" + format_time_precise()
 print(name)
 
-train_set = clothesGroup(configuration["N"], "train", 100)
-test_set = clothesGroup(configuration["N"], "test", 10)
+train_set = clothesGroup(configuration["N"], "train", 20)
+test_set = clothesGroup(configuration["N"], "test", 20)
+
+print(train_set.to_queries())
 
 network = Clothes_MNIST_Net()
 
