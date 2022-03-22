@@ -16,21 +16,21 @@ startTime = time.time()
 ######################################
 
 dprogram = r'''
-clothesImage(c1). 
-clothesImage(c2).
-clothesImage(c3).
-top(0).
-bot(1).
-shoe(5).
+clothesImage(c1; c2; c3). 
+top(0; 2; 6).
+bot(1; 3; 8).
+shoe(5; 7; 9).
 
-clothesGroup(A, B, C) :- top(A), bot(B), shoe(C); top(A), bot(C), shoe(B); top(B), bot(A), shoe(C);
-                         top(B), bot(C), shoe(A); top(C), bot(A), shoe(B); top(C), bot(B), shoe(A).
-                         
-finalQuery(C1, C2, C3) :- clothes(0, C1, A), clothes(0, C2, B), clothes(0, C3, C), 
-                       A != B, B != C, A != C, 
-                       clothesGroup(A, B, C).
+% "winand dit is super lelijk" -> https://stackoverflow.com/questions/66880574/disjunction-in-the-body-of-a-rule-in-clingo
+clothesGroup(c1, c2, c3, 1) :- clothes(0, CX, A), clothes(0, CY, B), clothes(0, CZ, C), top(A), bot(B), shoe(C).
+clothesGroup(c1, c2, c3, 1) :- clothes(0, CX, A), clothes(0, CY, B), clothes(0, CZ, C), top(A), bot(C), shoe(B).
+clothesGroup(c1, c2, c3, 1) :- clothes(0, CX, A), clothes(0, CY, B), clothes(0, CZ, C), top(B), bot(A), shoe(C).
+clothesGroup(c1, c2, c3, 1) :- clothes(0, CX, A), clothes(0, CY, B), clothes(0, CZ, C), top(B), bot(C), shoe(A).
+clothesGroup(c1, c2, c3, 1) :- clothes(0, CX, A), clothes(0, CY, B), clothes(0, CZ, C), top(C), bot(A), shoe(B).
+clothesGroup(c1, c2, c3, 1) :- clothes(0, CX, A), clothes(0, CY, B), clothes(0, CZ, C), top(C), bot(B), shoe(A).
+
+clothesGroup(c1, c2, c3, 0) :- not clothesGroup(c1, c2, c3, 1).
                        
-finalQuery(c1, c2, c3).
 nn(clothes(1, X), [0, 1, 5]) :- clothesImage(X).
 '''
 
@@ -54,7 +54,7 @@ saveModelPath = 'data/model.pt'
 for i in range(1):
     print('Epoch {}...'.format(i+1))
     time1 = time.time()
-    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=1, smPickle='data/stableModels.pickle')
+    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=1, lr=0.01, smPickle='data/stableModels.pickle')
     time2 = time.time()
     acc, _ = NeurASPobj.testNN('clothes', test_loader)
     print('Test Acc: {:0.2f}%'.format(acc))

@@ -348,7 +348,6 @@ class NeurASP(object):
                             gradients = - dmvpp.mvppLearn(models_noSM)
                         else:
                             print('Error: the method \'%s\' should be either \'exact\' or \'sampling\'', method)
-
                     # Step 2.4: update parameters in neural networks
                     gradientsNN = gradients[:self.mvpp['nnPrRuleNum']].tolist()
                     for ruleIdx in range(self.mvpp['nnPrRuleNum']):
