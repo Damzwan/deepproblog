@@ -21,41 +21,44 @@ class ClothGroupHelper(object):
         self.tops = [0, 2, 6][:size]
         self.bots = [1, 3, 8][:size]
         self.shoe = [5, 7, 9][:size]
+        self.allClothes = self.tops + self.bots + self.shoe
         random.seed(0)
         self.data = dict()
         for i in range(10):
             self.data[i] = []
         for datapoint in dataset:
             self.data[datapoint[1]].append(datapoint)
-        print("Finished loading data")
 
-    def __getitem__(self, item):
-        return self.getRandomRight()
+    def createTrainingData(self, training_data_size):
+        trainingData = []
+        trainingIndices = []
 
-    def getRandomRight(self):
-        return random.sample([random.choice(self.data[random.choice(self.tops)]),
-                              random.choice(self.data[random.choice(self.bots)]),
-                              random.choice(self.data[random.choice(self.shoe)])], 3)
+        corrects, wrongs = training_data_size / 2, training_data_size / 2
+        i = 0
+        while corrects > 0 or wrongs > 0:  # very unsafe, assumes more wrongs than rights
+            newCombo = random.choices(self.allClothes, k=3) if wrongs > 0 else self.getRandomCorrect()
+            correct = self.isCorrectCombination(newCombo)
+            trainingData.extend([self.getRandomItemFromData(clothId) for clothId in newCombo])
+            trainingIndices.append((i, i + 1, i + 2))
+            i += 3
+            if correct:
+                corrects -= 1
+            else:
+                wrongs -= 1
+        trainingIndices = random.sample(trainingIndices, len(trainingIndices))  # shuffle data
+        return trainingData, trainingIndices
 
-    def getRandomWrong(self):
-        all_clothes = [0, 2, 6, 1, 3, 8, 5, 7, 9]
-        return random.sample([random.choice(self.data[random.choice(all_clothes)]),
-                              random.choice(self.data[random.choice(all_clothes)]),
-                              random.choice(self.data[random.choice(all_clothes)])], 3)
+    def getRandomCorrect(self):
+        return random.sample([random.choice(self.tops), random.choice(self.bots), random.choice(self.shoe)], 3)
 
     def getCloth(self, kind, index):
         return self.data[kind][index]
 
-    def check_cloth_group(self, clothes):
-        groups = [[cloth for cloth in clothes if cloth in self.tops],
-                  [cloth for cloth in clothes if cloth in self.bots],
-                  [cloth for cloth in clothes if cloth in self.shoe]]
+    def getRandomItemFromData(self, classo):
+        return random.sample(self.data[classo], 1)[0]
 
-        for group in groups:
-            if len(group) == 0:
-                return 0  # false in prolog
-
-        return 1
+    def isCorrectCombination(self, combo):
+        return all([bool(set(c) & set(combo)) for c in [self.tops, self.bots, self.shoe]])
 
     def __len__(self):
         return sum(len(x) for x in self.data.values())
@@ -96,13 +99,14 @@ class MNIST_Images(object):
 #         self.val_list = list(labelMap.values())
 
 
-def clothesGroup(config, dataset: str, size):
+def clothesGroup(dataset: str, size, training_size):
     """Returns a dataset for binary addition"""
     return MNISTOperator(
         dataset_name=dataset,
         function_name="clothesGroup",
         size=size,
         arity=3,
+        training_data_size=training_size
     )
 
 
@@ -126,13 +130,7 @@ class MNISTOperator(Dataset, TorchDataset):
         self.data = []
         self.data_indices = []
 
-        for i in range(0, 6 * (training_data_size // 2), 6):
-            self.data.extend(self.cloth_group_helper.getRandomRight())
-            self.data_indices.append((i, i + 1, i + 2))
-
-            j = i + 3
-            self.data.extend(self.cloth_group_helper.getRandomWrong())
-            self.data_indices.append((j, j + 1, j + 2))
+        self.data, self.data_indices = self.cloth_group_helper.createTrainingData(training_data_size)
 
     def get_tensor_source(self):
         return MNIST_Images(self.data)
@@ -184,11 +182,10 @@ class MNISTOperator(Dataset, TorchDataset):
             subs,
         )
 
-    # TODO no label
     def _get_label(self, i: int):
         indices = self.data_indices[i]
         clothes = [self.data[x][1] for x in indices]
-        return self.cloth_group_helper.check_cloth_group(clothes)
+        return int(self.cloth_group_helper.isCorrectCombination(clothes))
 
     def __len__(self):
         return len(self.data_indices)
