@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self, classAmount):
         super(Net, self).__init__()
         self.encoder = nn.Sequential(
             nn.Conv2d(1, 6, 5), # 6 is the output chanel size; 5 is the kernal size; 1 (chanel) 28 28 -> 6 24 24
@@ -17,7 +17,7 @@ class Net(nn.Module):
             nn.ReLU(),
             nn.Linear(120, 84),
             nn.ReLU(),
-            nn.Linear(84, 10),
+            nn.Linear(84, classAmount),
             nn.Softmax(1)
         )
 

@@ -29,3 +29,5 @@ obsList = []
 for i1, i2, l in train_dataset:
     dataList.append({'i1': i1.unsqueeze(0), 'i2': i2.unsqueeze(0)})
     obsList.append(':- not addition(i1, i2, {}).'.format(l))
+print(dataList[0])
+print(obsList[0])
