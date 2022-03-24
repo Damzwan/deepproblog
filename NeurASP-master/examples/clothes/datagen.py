@@ -5,8 +5,8 @@ from torch.utils.data import Dataset
 from torchvision.transforms import transforms
 from torch.utils.data import Subset
 
-TRAINING_DATA_SIZE = 3000
-TYPES_OF_CLOTHES = 1 # Change also line 34 and 42 in train.py
+TRAINING_DATA_SIZE = 1000
+TYPES_OF_CLOTHES = 2 # Change also line 34 and 42 in train.py
 
 class FashionMNIST_Group(Dataset):
 
@@ -63,9 +63,9 @@ train_dataset = torchvision.datasets.FashionMNIST(root='./data/', train=True, do
 train_dataset = FashionMNIST_Group(train_dataset, TYPES_OF_CLOTHES)
 
 test_dataset = torchvision.datasets.FashionMNIST('./data/', train=False, transform=transform)
-indices = [i for i in range(len(test_dataset)) if test_dataset.targets[i] in [0, 1, 5]]
+indices = [i for i in range(len(test_dataset)) if test_dataset.targets[i] in train_dataset.allClothes]
 test_dataset = Subset(test_dataset, indices)
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=10, shuffle=False)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=500, shuffle=False)
 
 dataList = []
 obsList = []

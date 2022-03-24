@@ -390,6 +390,22 @@ class NeurASP(object):
                     pickle.dump(self.stableModels, fp)
                 savePickle = False
 
+    def findMappingBetweenLists(self, prediction, targets):
+        # Given 2 lists of integers, creates a dictionary mapping the integers of the first list to the second
+        # resulting in maximum overlap
+        print("finding mapping between", prediction, "and", targets)
+        countDict = {i: [0] * 10 for i in range(10)}
+        for pred, target in zip(prediction, targets):
+            countDict[target][pred] += 1
+        resultDict = {}
+        for target, predictionCounts in countDict.items():
+            if sum(predictionCounts) == 0:
+                continue # This target never existed, we don't need to create a mapping
+
+            resultDict[predictionCounts.index(max(predictionCounts))] = target
+        print("result dict is", resultDict)
+        return resultDict
+
     def testNN(self, nn, testLoader):
         """
         Return a real number in [0,100] denoting accuracy
@@ -403,6 +419,8 @@ class NeurASP(object):
         # check if each single prediction is correct
         singleCorrect = 0
         singleTotal = 0
+        outputMapping = None
+        hasAsked = False
         with torch.no_grad():
             for data, target in testLoader:
                 # print("data and target is", data, target)
@@ -410,6 +428,10 @@ class NeurASP(object):
                 # print("output:", output)
                 if self.n[nn] > 2 :
                     pred = output.argmax(dim=-1, keepdim=True) # get the index of the max log-probability
+                    if not hasAsked:
+                        hasAsked = True
+                        outputMapping = self.findMappingBetweenLists([i[0] for i in pred.tolist()], target.tolist())
+                    pred = torch.tensor([[outputMapping[i[0]]] for i in pred.tolist()])
                     target = target.to(self.device).view_as(pred)
                     correctionMatrix = (target.int() == pred.int()).view(target.shape[0], -1)
                     correct += correctionMatrix.all(1).sum().item()
