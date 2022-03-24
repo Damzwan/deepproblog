@@ -30,10 +30,8 @@ torch.manual_seed(configuration["run"])
 name = "clothes" + config_to_string(configuration) + "_" + format_time_precise()
 print(name)
 
-train_set = clothesGroup(configuration["N"], "train", 20)
-test_set = clothesGroup(configuration["N"], "test", 20)
-
-print(train_set.to_queries())
+train_set = clothesGroup("train", 3, 50000)
+test_set = clothesGroup("test", 3, 5000)
 
 network = Clothes_MNIST_Net()
 
@@ -57,7 +55,7 @@ model.add_tensor_source("train", train_set.get_tensor_source())
 model.add_tensor_source("test", test_set.get_tensor_source())
 
 loader = DataLoader(train_set, 2, False)
-train = train_model(model, loader, 1, log_iter=100, profile=0)
+train = train_model(model, loader, 5, log_iter=100, profile=0)
 model.save_state("snapshot/" + name + ".pth")
 train.logger.comment(dumps(model.get_hyperparameters()))
 train.logger.comment(
