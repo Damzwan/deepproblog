@@ -431,7 +431,7 @@ class NeurASP(object):
                     if not hasAsked:
                         hasAsked = True
                         outputMapping = self.findMappingBetweenLists([i[0] for i in pred.tolist()], target.tolist())
-                    pred = torch.tensor([[outputMapping[i[0]]] for i in pred.tolist()])
+                    pred = torch.tensor([[outputMapping.get(i[0], 0)] for i in pred.tolist()])
                     target = target.to(self.device).view_as(pred)
                     correctionMatrix = (target.int() == pred.int()).view(target.shape[0], -1)
                     correct += correctionMatrix.all(1).sum().item()

@@ -5,8 +5,8 @@ from torch.utils.data import Dataset
 from torchvision.transforms import transforms
 from torch.utils.data import Subset
 
-TRAINING_DATA_SIZE = 1000
-TYPES_OF_CLOTHES = 2 # Change also line 34 and 42 in train.py
+TRAINING_DATA_SIZE = 2500
+TYPES_OF_CLOTHES = 3 # Change also line 34 and 42 in train.py
 
 class FashionMNIST_Group(Dataset):
 

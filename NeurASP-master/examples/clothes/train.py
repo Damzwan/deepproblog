@@ -31,7 +31,7 @@ clothesGroup(c1, c2, c3, 1) :- clothes(0, CX, A), clothes(0, CY, B), clothes(0, 
 
 clothesGroup(c1, c2, c3, 0) :- not clothesGroup(c1, c2, c3, 1).
                        
-nn(clothes(1, X), [0, 1, 2, 3, 5, 7]) :- clothesImage(X).
+nn(clothes(1, X), [0, 1, 2, 3, 5, 6, 7, 8, 9]) :- clothesImage(X).
 '''
 
 
@@ -39,7 +39,7 @@ nn(clothes(1, X), [0, 1, 2, 3, 5, 7]) :- clothesImage(X).
 # Define nnMapping and optimizers, initialze NeurASP object
 ########
 
-m = Net(6) # write amount of possible clothes classes here
+m = Net(9) # write amount of possible clothes classes here
 nnMapping = {'clothes': m}
 optimizers = {'clothes': torch.optim.Adam(m.parameters(), lr=0.001)}
 
@@ -54,7 +54,7 @@ saveModelPath = 'data/model.pt'
 for i in range(1):
     print('Epoch {}...'.format(i+1))
     time1 = time.time()
-    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=3, smPickle='data/stableModels.pickle')
+    NeurASPobj.learn(dataList=dataList, obsList=obsList, epoch=5, smPickle='data/stableModels.pickle')
     time2 = time.time()
     acc, _ = NeurASPobj.testNN('clothes', test_loader)
     print('Test Acc: {:0.2f}%'.format(acc))
